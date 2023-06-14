@@ -7,7 +7,7 @@ services:
       - data:/data/db
 
   nginx:
-    image: clab-orchestrator:proxy
+    image: clab-manager:proxy
     restart: always
     ports:
       - "5000:80"
@@ -16,13 +16,13 @@ services:
       - frontend
       - backend
   backend:
-    image: clab-orchestrator:backend
+    image: clab-manager:backend
 
     depends_on:
       - mongodb
 
   frontend:
-    image: clab-orchestrator:frontend
+    image: clab-manager:frontend
     stdin_open: true
     tty: true
 

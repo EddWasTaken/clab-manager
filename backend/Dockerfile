@@ -10,7 +10,7 @@ COPY ./controllers ./controllers
 COPY ./models ./models
 COPY ./routes ./routes
 
-RUN mkdir /topos
+RUN mkdir ./topos
 
 RUN npm install
 

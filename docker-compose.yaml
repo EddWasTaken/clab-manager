@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  mongodb:
+    image: "mongo"
+    restart: always
+    volumes:
+      - data:/data/db
+
+  nginx:
+    image: clab-orchestrator:proxy
+    restart: always
+    ports:
+      - "5000:80"
+
+    depends_on:
+      - frontend
+      - backend
+  backend:
+    image: clab-orchestrator:backend
+
+    depends_on:
+      - mongodb
+
+  frontend:
+    image: clab-orchestrator:frontend
+    stdin_open: true
+    tty: true
+
+    depends_on:
+      - backend
+
+volumes:
+  data:

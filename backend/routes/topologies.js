@@ -11,7 +11,6 @@ router.get('/', getTopologies);
 
 router.post('/', createTopology);
 
-
 router.get('/:name', getTopologyByName);
 
 export default router;

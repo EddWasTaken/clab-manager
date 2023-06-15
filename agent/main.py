@@ -2,32 +2,82 @@ import requests
 import json
 import yaml
 import os
+from pathlib import Path
 
-url = "http://localhost:5000/yaml/test"
-response = requests.get(url)
-get = json.loads(response.content.decode())
+'''
+These constants store the necessary variables for a successful connection
+to the API, and should be set before running the agent script and/or setting it up
+with cron. 
+Important note, the /api endpoint doesn't reply with anything, and should not be used for testing.
+By default, the agent tests the connection on the /api/deployments endpoint
+'''
+MANAGER_IP = "192.168.153.130"
+MANAGER_PORT = "5000"
+WORKER_NAME = "worker01"
 
-yaml_data = yaml.dump(get, sort_keys=False)#short-keys para organizar o ficheiro yaml como pretendido
+BASE_MANAGER_URL = f"http://{MANAGER_IP}:{MANAGER_PORT}/api"
+WORKER_DEPLOYMENTS = f"{BASE_MANAGER_URL}/deployments/worker/{WORKER_NAME}"
 
-name = get.get("name")
 
-# Generate the file path and name based on the "name" parameter
-file_path = fr"C:\Users\Gerson\Desktop\Escola\3 Ano\2 Semestre\Projeto Informatico\Agente\{name}.yaml"
+def test_connection():
+    res = requests.get(BASE_MANAGER_URL + "/deployments")
 
-# Check if the file exists and compare its content with the new YAML data
-if os.path.exists(file_path):
-    with open(file_path, 'r') as file:
-        existing_yaml_data = file.read()
+    if res.status_code != 200:
+        print("Couldn't reach the CLab-Manager API")
+        return 1
+    return 0
+        
+def get_all_deployments():
+    res = requests.get(WORKER_DEPLOYMENTS)
+    res_json = json.loads(res.content.decode())
 
-    if existing_yaml_data == yaml_data:
-        print(f"File {file_path} already exists and has not changed. No replacement needed.")
-    else:
-        with open(file_path, 'w') as file:
-            file.write(yaml_data)
-        print(f"File {file_path} already exists but has changed. Replaced with new data.")
-else:
-    with open(file_path, 'w') as file:
-        file.write(yaml_data)
-    print(f"New file {file_path} created.")
-print(get)
-#print(f"YAML data has been saved to {file_path}")
+    deployed_topos = list()
+    for deployment in res_json:
+        deployed_topos.append(deployment.get('topo_name'))
+    return deployed_topos
+    
+def get_topos(topo_list):
+
+    base_path = Path.cwd()
+    save_topos_path = base_path.joinpath("topos")
+
+    if not Path.exists(save_topos_path):
+        save_topos_path.mkdir()
+    
+    for topo in topo_list:
+        res = requests.get(BASE_MANAGER_URL + "/topologies/" + topo)
+
+        res_json = json.loads(res.content.decode())
+        res_yaml = yaml.dump(res_json, sort_keys=False)
+
+        file_name = topo + ".yaml"
+        topo_path = save_topos_path.joinpath(file_name)
+        # Check if the file exists and compare its content with the new YAML data
+        if Path.exists(topo_path):
+            with open(topo_path, 'r') as file:
+                existing_yaml_data = file.read()
+
+            if existing_yaml_data == res_yaml:
+                print(f"File {file_name} already exists and has not changed. No replacement needed.")
+            else:
+                with open(topo_path, 'w') as file:
+                    file.write(res_yaml)
+                print(f"File {file_name} already exists but has changed. Replaced with new data.")
+        else:
+            with open(topo_path, 'w') as file:
+                file.write(res_yaml)
+            print(f"New file {file_name} created.")
+                
+
+def main():
+    if test_connection() != 0:
+        return
+    
+    topo_list = get_all_deployments()
+
+    if len(topo_list) == 0:
+        print("No deployments found associated with this worker. Exiting...")
+
+    get_topos(topo_list)
+    
+main()

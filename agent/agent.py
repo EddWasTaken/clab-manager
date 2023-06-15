@@ -1,7 +1,7 @@
 import requests
 import json
 import yaml
-import os
+import subprocess
 from pathlib import Path
 
 '''
@@ -23,7 +23,7 @@ def test_connection():
     res = requests.get(BASE_MANAGER_URL + "/deployments")
 
     if res.status_code != 200:
-        print("Couldn't reach the CLab-Manager API")
+        print("[ERROR] Unable to reach the CLab-Manager API")
         return 1
     return 0
         
@@ -44,6 +44,7 @@ def get_topos(topo_list):
     if not Path.exists(save_topos_path):
         save_topos_path.mkdir()
     
+    topo_path_dict = dict()
     for topo in topo_list:
         res = requests.get(BASE_MANAGER_URL + "/topologies/" + topo)
 
@@ -56,18 +57,37 @@ def get_topos(topo_list):
         if Path.exists(topo_path):
             with open(topo_path, 'r') as file:
                 existing_yaml_data = file.read()
-
             if existing_yaml_data == res_yaml:
-                print(f"File {file_name} already exists and has not changed. No replacement needed.")
+                print(f"[INFO] Topology {file_name} already exists and has not changed, skipping")
+                topo_path_dict[topo_path] = False
             else:
                 with open(topo_path, 'w') as file:
                     file.write(res_yaml)
-                print(f"File {file_name} already exists but has changed. Replaced with new data.")
+                print(f"[INFO] Topology {file_name} already exists and has changed, rewriting.")
+                topo_path_dict[topo_path] = True
         else:
             with open(topo_path, 'w') as file:
                 file.write(res_yaml)
-            print(f"New file {file_name} created.")
+            print(f"[INFO] Topology {file_name} created.")
+            topo_path_dict[topo_path] = True
+    return topo_path_dict
                 
+def deploy_topos(path_dict):
+
+    for topo in path_dict:
+        # check if the deployment exists
+        if subprocess.run(["clab", "inspect", "--topo", topo], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode == 0:
+            # check if yaml was changed before destroying
+            if path_dict[topo]:
+                print("[INFO] Topology file was updated, redeploying")
+                redeploy = subprocess.run(["clab", "deploy", "--topo", topo, "--reconfigure"])
+            else:
+                print("[INFO] Topology file wasn't updated and the lab is running, skipping")
+        else:
+            deployment = subprocess.run(["clab", "deploy", "--topo", topo])
+            if deployment.returncode != 0:
+                print("[ERROR] Unable to deploy the topology. Code: %d" % deployment.returncode)
+
 
 def main():
     if test_connection() != 0:
@@ -78,6 +98,8 @@ def main():
     if len(topo_list) == 0:
         print("No deployments found associated with this worker. Exiting...")
 
-    get_topos(topo_list)
+    path_dict = get_topos(topo_list)
+
+    deploy_topos(path_dict)
     
 main()

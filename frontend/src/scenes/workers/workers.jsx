@@ -1,36 +1,142 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody } from "@mui/material";
+import {
+  Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button, Dialog,
+  DialogTitle,DialogContent, DialogActions,   TextField,FormControl, InputLabel, Select, MenuItem,
+} from "@mui/material";
 import Header from "../../components/Header";
 
 const Workers = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [newWorkerName, setNewWorkerName] = useState("");
+  const [isCreatingWorker, setIsCreatingWorker] = useState(false);
+  const [createWorkerError, setCreateWorkerError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch("/api/workers/");
-        if (!response.ok) {
-          throw new Error("Failed to fetch workers");
-        }
-        const data = await response.json();
-        setData(data);
-        setIsLoading(false);
-      } catch (error) {
-        setError(error.message);
-        setIsLoading(false);
-      }
-      console.log(data)
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch("api/workers/");
+      if (!response.ok) {
+        throw new Error("Failed to fetch workers");
+      }
+      const data = await response.json();
+      setData(data);
+      setIsLoading(false);
+    } catch (error) {
+      setError(error.message);
+      setIsLoading(false);
+    }
+   
+  };
+
+  const handleDialogOpen = () => {
+    setOpenDialog(true);
+  };
+
+  const handleDialogClose = () => {
+    setOpenDialog(false);
+    setNewWorkerName("");
+    setCreateWorkerError(null); 
+  };
+
+  const handleCreateWorker = async () => {
+    if (newWorkerName === "") {
+      setCreateWorkerError("The Worker must have a name");
+      return;
+    }
+
+    try {
+      setIsCreatingWorker(true);
+
+      const response = await fetch("api/workers/");
+      if (!response.ok) {
+        throw new Error("Failed to fetch workers");
+      }
+
+      const existingWorkers = await response.json();
+
+      const workerExists = existingWorkers.some((worker) => worker.name === newWorkerName);
+      if (workerExists) {
+        setCreateWorkerError("Worker Already exists");
+        setIsCreatingWorker(false);
+        return;
+      }
+
+      const createResponse = await fetch("/api/workers/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name: newWorkerName }),
+      });
+
+      setIsCreatingWorker(false);
+
+      if (!createResponse.ok) {
+        throw new Error("Failed to create worker");
+      }
+
+      // Clear the name 
+      setNewWorkerName("");
+      handleDialogClose();
+ 
+      fetchData();
+    } catch (error) {
+      setCreateWorkerError("Failed to create worker");
+      console.error(error);
+    }
+  };
+
+  const handleDeleteWorker = async (workerName) => {
+    const response = await fetch(`/api/deployments/`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch deployments");
+    }
+  
+    const deployments = await response.json();
+  
+    // Vê se o worker tem deployments
+    const associatedDeployments = deployments.filter((deployment) => deployment.worker_name === workerName);
+  
+    if (associatedDeployments.length > 0) {
+      window.alert(`The worker "${workerName}" has deployments associated and cannot be deleted.`);
+    } else {
+      const confirmDelete = window.confirm(`Are you sure you want to delete the worker "${workerName}"?`);
+  
+      if (confirmDelete) {
+        try {
+          const deleteResponse = await fetch(`http://127.0.0.1:5000/api/workers/${workerName}`, {
+            method: "DELETE",
+          });
+  
+          if (!deleteResponse.ok) {
+            throw new Error("Failed to delete worker");
+          }
+  
+          fetchData();
+        } catch (error) {
+          console.error(error);
+          window.alert(`Error: ${error.message}`);
+        }
+      }
+    }
+  };
+  
+  
+  
 
   return (
     <Box m="20px">
       <Box display="flex" justifyContent="space-between" alignItems="center">
-        <Header title="Workers"/>
+        <Header title="Workers" />
+        <Button variant="contained" onClick={handleDialogOpen}>
+          Create Worker
+        </Button>
       </Box>
       {isLoading ? (
         <div>Loading...</div>
@@ -43,6 +149,7 @@ const Workers = () => {
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>ID</TableCell>
+                <TableCell>***</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -50,12 +157,41 @@ const Workers = () => {
                 <TableRow key={worker._id}>
                   <TableCell>{worker.name}</TableCell>
                   <TableCell>{worker._id}</TableCell>
+                  <TableCell>
+                    <Button variant="contained" onClick={() => handleDeleteWorker(worker.name)}>
+                      
+                      Delete
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
       )}
+      <Dialog open={openDialog} onClose={handleDialogClose}>
+        <DialogTitle>Create Worker</DialogTitle>
+        <DialogContent>
+          {createWorkerError && <div>Error: {createWorkerError}</div>}
+          <TextField
+            label="Name"
+            fullWidth
+            value={newWorkerName}
+            onChange={(e) => {
+              setNewWorkerName(e.target.value);
+              setCreateWorkerError(null); // limpa o erro
+            }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" onClick={handleDialogClose}>
+            Cancel
+          </Button>
+          <Button variant="contained" onClick={handleCreateWorker} disabled={isCreatingWorker}>
+            Create
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

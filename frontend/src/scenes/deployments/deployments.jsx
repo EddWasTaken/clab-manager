@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import {
   Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button, Dialog,
-  DialogTitle,DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem,
+  DialogTitle,DialogContent,DialogActions, FormControl, InputLabel, Select, MenuItem, TextField,
 } from "@mui/material";
 
 const Deployments = () => {
@@ -14,21 +14,17 @@ const Deployments = () => {
   const [topologies, setTopologies] = useState([]);
   const [selectedWorker, setSelectedWorker] = useState("");
   const [selectedTopology, setSelectedTopology] = useState("");
+  const [port, setPort] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/deployments/");
+        const response = await fetch("http://127.0.0.1:5000/api/deployments/");
         if (!response.ok) {
           throw new Error("Failed to fetch deployments");
         }
         const data = await response.json();
-        // Mudar mais tarde -> Adicionar o porto á base de dados
-        const updatedData = data.map((deployment) => ({
-          ...deployment,
-          port: "50080",
-        }));
-        setData(updatedData);
+        setData(data);
         setIsLoading(false);
       } catch (error) {
         setError(error.message);
@@ -42,12 +38,13 @@ const Deployments = () => {
   useEffect(() => {
     const fetchWorkers = async () => {
       try {
-        const response = await fetch("/api/workers/");
+        const response = await fetch("http://127.0.0.1:5000/api/workers/");
         if (!response.ok) {
           throw new Error("Failed to fetch workers");
         }
         const data = await response.json();
         setWorkers(data);
+        console.log(data)
       } catch (error) {
         console.error("Error fetching workers:", error);
       }
@@ -55,7 +52,7 @@ const Deployments = () => {
 
     const fetchTopologies = async () => {
       try {
-        const response = await fetch("/api/topologies/");
+        const response = await fetch("http://127.0.0.1:5000/api/topologies/");
         if (!response.ok) {
           throw new Error("Failed to fetch topologies");
         }
@@ -77,6 +74,7 @@ const Deployments = () => {
   const handleCloseDialog = () => {
     setSelectedWorker("");
     setSelectedTopology("");
+    setPort("");
     setOpenDialog(false);
   };
 
@@ -90,7 +88,7 @@ const Deployments = () => {
 
   const handleDeploymentCreate = async () => {
     try {
-      const response = await fetch("/api/deployments/", {
+      const response = await fetch("http://127.0.0.1:5000/api/deployments/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -100,17 +98,17 @@ const Deployments = () => {
           topo_name: selectedTopology.name,
           worker_id: selectedWorker._id,
           topo_id: selectedTopology._id,
+          port: port,
         }),
       });
       if (!response.ok) {
         throw new Error("Failed to create deployment");
       }
       const newDeployment = await response.json();
-     ////remover no fim de adicionar á base de dados
-      newDeployment.port = "50080";
       setData([...data, newDeployment]);
       setSelectedWorker("");
       setSelectedTopology("");
+      setPort("");
       handleCloseDialog();
     } catch (error) {
       console.error("Error creating deployment:", error);
@@ -121,7 +119,6 @@ const Deployments = () => {
     const url = `/cenario?port=${port}`;
     window.open(url, "_self");
   };
-  
 
   return (
     <Box m="20px">
@@ -199,12 +196,17 @@ const Deployments = () => {
               ))}
             </Select>
           </FormControl>
+          <TextField
+            label="Port"
+            value={port}
+            onChange={(event) => setPort(event.target.value)}
+            fullWidth
+          />
         </DialogContent>
         <DialogActions>
           <Button variant="contained" onClick={handleCloseDialog} mt="20px">
             Cancel
           </Button>
-
           <Button
             variant="contained"
             onClick={handleDeploymentCreate}

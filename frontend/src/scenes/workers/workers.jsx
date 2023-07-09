@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button, Dialog,
-  DialogTitle,DialogContent, DialogActions,   TextField,FormControl, InputLabel, Select, MenuItem,
+  Box,
+  Table,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from "@mui/material";
 import Header from "../../components/Header";
 
@@ -11,6 +22,7 @@ const Workers = () => {
   const [error, setError] = useState(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [newWorkerName, setNewWorkerName] = useState("");
+  const [newWorkerIP, setNewWorkerIP] = useState("");
   const [isCreatingWorker, setIsCreatingWorker] = useState(false);
   const [createWorkerError, setCreateWorkerError] = useState(null);
 
@@ -20,7 +32,7 @@ const Workers = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch("api/workers/");
+      const response = await fetch("http://127.0.0.1:5000/api/workers/");
       if (!response.ok) {
         throw new Error("Failed to fetch workers");
       }
@@ -31,7 +43,6 @@ const Workers = () => {
       setError(error.message);
       setIsLoading(false);
     }
-   
   };
 
   const handleDialogOpen = () => {
@@ -41,7 +52,8 @@ const Workers = () => {
   const handleDialogClose = () => {
     setOpenDialog(false);
     setNewWorkerName("");
-    setCreateWorkerError(null); 
+    setNewWorkerIP("");
+    setCreateWorkerError(null);
   };
 
   const handleCreateWorker = async () => {
@@ -53,7 +65,7 @@ const Workers = () => {
     try {
       setIsCreatingWorker(true);
 
-      const response = await fetch("api/workers/");
+      const response = await fetch("http://127.0.0.1:5000/api/workers/");
       if (!response.ok) {
         throw new Error("Failed to fetch workers");
       }
@@ -62,17 +74,17 @@ const Workers = () => {
 
       const workerExists = existingWorkers.some((worker) => worker.name === newWorkerName);
       if (workerExists) {
-        setCreateWorkerError("Worker Already exists");
+        setCreateWorkerError("Worker already exists");
         setIsCreatingWorker(false);
         return;
       }
 
-      const createResponse = await fetch("/api/workers/", {
+      const createResponse = await fetch("http://127.0.0.1:5000/api/workers/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name: newWorkerName }),
+        body: JSON.stringify({ name: newWorkerName, ip: newWorkerIP }),
       });
 
       setIsCreatingWorker(false);
@@ -81,10 +93,9 @@ const Workers = () => {
         throw new Error("Failed to create worker");
       }
 
-      // Clear the name 
       setNewWorkerName("");
+      setNewWorkerIP("");
       handleDialogClose();
- 
       fetchData();
     } catch (error) {
       setCreateWorkerError("Failed to create worker");
@@ -93,31 +104,30 @@ const Workers = () => {
   };
 
   const handleDeleteWorker = async (workerName) => {
-    const response = await fetch(`/api/deployments/`);
+    const response = await fetch(`http://127.0.0.1:5000/api/deployments/`);
     if (!response.ok) {
       throw new Error("Failed to fetch deployments");
     }
-  
+
     const deployments = await response.json();
-  
-    // Vê se o worker tem deployments
+
     const associatedDeployments = deployments.filter((deployment) => deployment.worker_name === workerName);
-  
+
     if (associatedDeployments.length > 0) {
       window.alert(`The worker "${workerName}" has deployments associated and cannot be deleted.`);
     } else {
       const confirmDelete = window.confirm(`Are you sure you want to delete the worker "${workerName}"?`);
-  
+
       if (confirmDelete) {
         try {
           const deleteResponse = await fetch(`http://127.0.0.1:5000/api/workers/${workerName}`, {
             method: "DELETE",
           });
-  
+
           if (!deleteResponse.ok) {
             throw new Error("Failed to delete worker");
           }
-  
+
           fetchData();
         } catch (error) {
           console.error(error);
@@ -126,9 +136,6 @@ const Workers = () => {
       }
     }
   };
-  
-  
-  
 
   return (
     <Box m="20px">
@@ -149,6 +156,7 @@ const Workers = () => {
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>ID</TableCell>
+                <TableCell>IP</TableCell>
                 <TableCell>***</TableCell>
               </TableRow>
             </TableHead>
@@ -157,9 +165,9 @@ const Workers = () => {
                 <TableRow key={worker._id}>
                   <TableCell>{worker.name}</TableCell>
                   <TableCell>{worker._id}</TableCell>
+                  <TableCell>{worker.ip}</TableCell>
                   <TableCell>
                     <Button variant="contained" onClick={() => handleDeleteWorker(worker.name)}>
-                      
                       Delete
                     </Button>
                   </TableCell>
@@ -179,8 +187,14 @@ const Workers = () => {
             value={newWorkerName}
             onChange={(e) => {
               setNewWorkerName(e.target.value);
-              setCreateWorkerError(null); // limpa o erro
+              setCreateWorkerError(null);
             }}
+          />
+          <TextField
+            label="IP"
+            fullWidth
+            value={newWorkerIP}
+            onChange={(e) => setNewWorkerIP(e.target.value)}
           />
         </DialogContent>
         <DialogActions>

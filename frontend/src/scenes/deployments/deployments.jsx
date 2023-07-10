@@ -1,8 +1,23 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import {
-  Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button, Dialog,
-  DialogTitle,DialogContent,DialogActions, FormControl, InputLabel, Select, MenuItem, TextField,
+  Box,
+  Table,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  TextField,
 } from "@mui/material";
 
 const Deployments = () => {
@@ -42,9 +57,8 @@ const Deployments = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch workers");
         }
-        const data = await response.json();
-        setWorkers(data);
-        console.log(data)
+        const workersData = await response.json();
+        setWorkers(workersData);
       } catch (error) {
         console.error("Error fetching workers:", error);
       }
@@ -115,9 +129,14 @@ const Deployments = () => {
     }
   };
 
-  const handleOpenWindow = (port) => {
-    const url = `/cenario?port=${port}`;
+  const handleOpenWindow = (ip, port) => {
+    const url = `/cenario?ip=${ip}&port=${port}`;
     window.open(url, "_self");
+  };
+
+  const getWorkerIP = (workerId) => {
+    const worker = workers.find((worker) => worker._id === workerId);
+    return worker ? worker.ip : "";
   };
 
   return (
@@ -138,6 +157,7 @@ const Deployments = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Worker NAME</TableCell>
+                <TableCell>Worker IP</TableCell>
                 <TableCell>Topology NAME</TableCell>
                 <TableCell>Port</TableCell>
                 <TableCell>Teste</TableCell>
@@ -147,12 +167,13 @@ const Deployments = () => {
               {data.map((deployment) => (
                 <TableRow key={deployment._id}>
                   <TableCell>{deployment.worker_name}</TableCell>
+                  <TableCell>{getWorkerIP(deployment.worker_id)}</TableCell>
                   <TableCell>{deployment.topo_name}</TableCell>
                   <TableCell>{deployment.port}</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
-                      onClick={() => handleOpenWindow(deployment.port)}
+                      onClick={() => handleOpenWindow(getWorkerIP(deployment.worker_id), deployment.port)}
                       mt="20px"
                     >
                       Rebenta

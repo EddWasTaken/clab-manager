@@ -1,3 +1,4 @@
+import yaml from "js-yaml";
 import React, { useState } from "react";
 import { Box, TextField, Button, Select, MenuItem } from "@mui/material";
 
@@ -91,13 +92,16 @@ const Generator = () => {
   };
 
   const postDeploy = async () => {
+    const jsonObj = yaml.load(topology);
+    const jsonStr = JSON.stringify(jsonObj);
+
     try {
       const response = await fetch("http://localhost:5000/api/topologies", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
-        body: topology
+        body: jsonStr,
       });
       if (response.ok) {
         console.log("Deploy successful");

@@ -34,7 +34,7 @@ const Deployments = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/deployments/");
+        const response = await fetch("/api/deployments/");
         if (!response.ok) {
           throw new Error("Failed to fetch deployments");
         }
@@ -53,7 +53,7 @@ const Deployments = () => {
   useEffect(() => {
     const fetchWorkers = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/workers/");
+        const response = await fetch("/api/workers/");
         if (!response.ok) {
           throw new Error("Failed to fetch workers");
         }
@@ -66,7 +66,7 @@ const Deployments = () => {
 
     const fetchTopologies = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:5000/api/topologies/");
+        const response = await fetch("/api/topologies/");
         if (!response.ok) {
           throw new Error("Failed to fetch topologies");
         }
@@ -102,7 +102,7 @@ const Deployments = () => {
 
   const handleDeploymentCreate = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/deployments/", {
+      const response = await fetch("/api/deployments/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

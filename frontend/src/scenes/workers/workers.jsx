@@ -32,7 +32,7 @@ const Workers = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:5000/api/workers/");
+      const response = await fetch("/api/workers/");
       if (!response.ok) {
         throw new Error("Failed to fetch workers");
       }
@@ -65,7 +65,7 @@ const Workers = () => {
     try {
       setIsCreatingWorker(true);
 
-      const response = await fetch("http://127.0.0.1:5000/api/workers/");
+      const response = await fetch("/api/workers/");
       if (!response.ok) {
         throw new Error("Failed to fetch workers");
       }
@@ -79,7 +79,7 @@ const Workers = () => {
         return;
       }
 
-      const createResponse = await fetch("http://127.0.0.1:5000/api/workers/", {
+      const createResponse = await fetch("/api/workers/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +104,7 @@ const Workers = () => {
   };
 
   const handleDeleteWorker = async (workerName) => {
-    const response = await fetch(`http://127.0.0.1:5000/api/deployments/`);
+    const response = await fetch(`/api/deployments/`);
     if (!response.ok) {
       throw new Error("Failed to fetch deployments");
     }
@@ -120,7 +120,7 @@ const Workers = () => {
 
       if (confirmDelete) {
         try {
-          const deleteResponse = await fetch(`http://127.0.0.1:5000/api/workers/${workerName}`, {
+          const deleteResponse = await fetch(`/api/workers/${workerName}`, {
             method: "DELETE",
           });
 

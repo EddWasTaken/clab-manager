@@ -18,7 +18,12 @@ const deploymentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Topology',
         required: true
+    },
+	port: {
+        type: Number,
+        required: true
     }
+
 
 })
 

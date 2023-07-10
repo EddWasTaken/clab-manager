@@ -1,16 +1,20 @@
 import yaml from "js-yaml";
 import React, { useState } from "react";
 import { Box, TextField, Button, Select, MenuItem } from "@mui/material";
-import Header from "../../components/Header";
 
 const Generator = () => {
   const [name, setName] = useState("");
   const [nodes, setNodes] = useState([]);
-  const [links, setLinks] = useState([]);
+  const [links, setLinks] = useState([
+    { node1: "", interface1: "", node2: "", interface2: "" }
+  ]);
   const [topology, setYaml] = useState("");
 
   const handleAddNode = () => {
-    setNodes([...nodes, { selectedOption: "Select Server", kind: "", image: "", ports: [] }]);
+    setNodes([
+      ...nodes,
+      { selectedOption: "Select Server", kind: "", image: "", ports: [] }
+    ]);
   };
 
   const handleNodeChange = (index, field, value) => {
@@ -58,12 +62,12 @@ const Generator = () => {
   };
 
   const handleAddLink = () => {
-    setLinks([...links, { endpoints: [] }]);
+    setLinks([...links, { node1: "", interface1: "", node2: "", interface2: "" }]);
   };
 
-  const handleLinkChange = (index, value) => {
+  const handleLinkChange = (index, field, value) => {
     const updatedLinks = [...links];
-    updatedLinks[index].endpoints = value.split(",");
+    updatedLinks[index][field] = value;
     setLinks(updatedLinks);
   };
 
@@ -82,7 +86,7 @@ const Generator = () => {
     });
     yamlString += "  links:\n";
     links.forEach((link, index) => {
-      yamlString += `    - endpoints: [${link.endpoints.map((ep) => `"${ep}"`).join(", ")}]\n`;
+      yamlString += `    - endpoints: ["${link.node1}:${link.interface1}", "${link.node2}:${link.interface2}"]\n`;
     });
     setYaml(yamlString);
   };
@@ -113,7 +117,7 @@ const Generator = () => {
     <Box m="20px" display="flex">
       <Box flex="1">
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Header title="YAML Generator" />
+          <h1>YAML Generator</h1>
         </Box>
         <Box mt="20px">
           <TextField
@@ -126,65 +130,133 @@ const Generator = () => {
           <Button variant="contained" onClick={handleAddNode}>
             Add Node
           </Button>
-          {/*  DROP LIST */}
           {nodes.map((node, index) => (
-            <Box key={index} mt="20px">
-              <Select
-                onChange={(e) => handleKindImageChange(index, e.target.value)}
-                fullWidth
-                margin="normal"
-                value={node.selectedOption}
-              >
-                <MenuItem value="Select Server">Select Server</MenuItem>
-                <MenuItem value="SR Linux">SR Linux</MenuItem>
-                <MenuItem value="Router Ceos">Router Ceos</MenuItem>
-                <MenuItem value="Server Nginx">Server Nginx</MenuItem>
-                <MenuItem value="Linux Desktop">Linux Desktop</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
-                
-              </Select>
-              {node.selectedOption === "Other" && (
+            <Box key={index} mt="20px" display="flex" alignItems="center">
+              <Box flex="1" mr="10px">
+                <Select
+                  onChange={(e) => handleKindImageChange(index, e.target.value)}
+                  fullWidth
+                  margin="normal"
+                  value={node.selectedOption}
+                >
+                  <MenuItem value="Select Server">Select Server</MenuItem>
+                  <MenuItem value="SR Linux">SR Linux</MenuItem>
+                  <MenuItem value="Router Ceos">Router Ceos</MenuItem>
+                  <MenuItem value="Server Nginx">Server Nginx</MenuItem>
+                  <MenuItem value="Linux Desktop">Linux Desktop</MenuItem>
+                  <MenuItem value="Other">Other</MenuItem>
+                </Select>
+              </Box>
+              {node.selectedOption === "Other" ? (
                 <>
-                  <TextField
-                    label="Node Kind"
-                    value={node.kind}
-                    onChange={(e) => handleKindImageInputChange(index, "kind", e.target.value)}
-                    fullWidth
-                    margin="normal"
-                  />
-                  <TextField
-                    label="Node Image"
-                    value={node.image}
-                    onChange={(e) => handleKindImageInputChange(index, "image", e.target.value)}
-                    fullWidth
-                    margin="normal"
-                  />
+                  <Box flex="1" mr="10px">
+                    <TextField
+                      label="Node Kind"
+                      value={node.kind}
+                      onChange={(e) =>
+                        handleKindImageInputChange(index, "kind", e.target.value)
+                      }
+                      fullWidth
+                      margin="normal"
+                    />
+                  </Box>
+                  <Box flex="1" mr="10px">
+                    <TextField
+                      label="Node Image"
+                      value={node.image}
+                      onChange={(e) =>
+                        handleKindImageInputChange(index, "image", e.target.value)
+                      }
+                      fullWidth
+                      margin="normal"
+                    />
+                  </Box>
                 </>
-              )}
-              <TextField
-                label="Node Ports"
-                value={node.ports.join(",")}
-                onChange={(e) => handleNodeChange(index, "ports", e.target.value.split(","))}
-                fullWidth
-                margin="normal"
-              />
+              ) : null}
+              <Box flex="1" mx="10px">
+                <TextField
+                  label="Node Ports"
+                  value={node.ports.join(",")}
+                  onChange={(e) =>
+                    handleNodeChange(index, "ports", e.target.value.split(","))
+                  }
+                  fullWidth
+                  margin="normal"
+                />
+              </Box>
             </Box>
           ))}
           <Button variant="contained" onClick={handleAddLink} mt="20px">
             Add Link
           </Button>
-          
+
           {links.map((link, index) => (
-            <Box key={index} mt="20px">
-              <TextField
-                label="Link Endpoints"
-                value={link.endpoints.join(",")}
-                onChange={(e) => handleLinkChange(index, e.target.value)}
-                fullWidth
-                margin="normal"
-              />
+            <Box key={index} mt="20px" display="flex" alignItems="center">
+              <Box flex="1" mr="10px">
+                <Select
+                  onChange={(e) =>
+                    handleLinkChange(index, "node1", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                  value={link.node1}
+                >
+                  <MenuItem value="">Select Node</MenuItem>
+                  {nodes.map((node, index) => (
+                    <MenuItem value={`node${index + 1}`} key={index}>
+                      {`Node ${index + 1}`}
+                    </MenuItem>
+                  ))}
+                 </Select>
+              </Box>
+              <Box flex="1" mx="10px">
+                <Select
+                  onChange={(e) =>
+                    handleLinkChange(index, "interface1", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                  value={link.interface1}
+                >
+                  <MenuItem value="">Select Interface</MenuItem>
+                  <MenuItem value="eth1">eth1</MenuItem>
+                  <MenuItem value="eth2">eth2</MenuItem>
+                </Select>
+              </Box>
+              <Box flex="1" ml="10px">
+                <Select
+                  onChange={(e) =>
+                    handleLinkChange(index, "node2", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                  value={link.node2}
+                >
+                  <MenuItem value="">Select Node</MenuItem>
+                  {nodes.map((node, index) => (
+                    <MenuItem value={`node${index + 1}`} key={index}>
+                      {`Node ${index + 1}`}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Box>
+              <Box flex="1" mx="10px">
+                <Select   
+                  onChange={(e) =>
+                    handleLinkChange(index, "interface2", e.target.value)
+                  }
+                  fullWidth
+                  margin="normal"
+                  value={link.interface2}
+                > 
+                  <MenuItem value="">Select Interface</MenuItem>
+                  <MenuItem value="eth1">eth1</MenuItem>
+                  <MenuItem value="eth2">eth2</MenuItem>
+                </Select>
+              </Box>
             </Box>
           ))}
+
         </Box>
       </Box>
       <Box flex="1" ml="20px">

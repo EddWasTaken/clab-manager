@@ -7,8 +7,10 @@ const Cenario = () => {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const port = searchParams.get("port");
+  const ip = searchParams.get("ip");
   const [secondBoxIp, setSecondBoxIp] = useState(""); 
   const [connected, setConnected] = useState(false); 
+ 
 
   const handleConnect = () => {
     setConnected(true); // faz aparecer a imagem
@@ -36,7 +38,7 @@ const Cenario = () => {
       <Box display="flex" mt="20px">
         <Box flex="1" mr="10px">
           <iframe
-            src={`http://192.168.83.211:${port}/`}
+            src={`http://${ip}:${port}/`}
             style={{ width: "100%", height: "700px", border: "none" }}
           />
         </Box>

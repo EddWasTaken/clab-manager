@@ -92,7 +92,7 @@ const Generator = () => {
     const jsonStr = JSON.stringify(jsonObj);
 
     try {
-      const response = await fetch("http://localhost:5000/api/topologies", {
+      const response = await fetch("/api/topologies", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

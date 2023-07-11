@@ -1,13 +1,12 @@
 import yaml from "js-yaml";
 import React, { useState } from "react";
-import { Box, TextField, Button, Select, MenuItem } from "@mui/material";
+import { Box, TextField, Button, Select, MenuItem, IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const Generator = () => {
   const [name, setName] = useState("");
   const [nodes, setNodes] = useState([]);
-  const [links, setLinks] = useState([
-    { node1: "", interface1: "", node2: "", interface2: "" }
-  ]);
+  const [links, setLinks] = useState([]);
   const [topology, setYaml] = useState("");
 
   const handleAddNode = () => {
@@ -71,6 +70,20 @@ const Generator = () => {
     setLinks(updatedLinks);
   };
 
+  const handleDeleteNode = (index) => {
+    const updatedNodes = [...nodes];
+    updatedNodes.splice(index, 1);
+    setNodes(updatedNodes);
+    generateYaml(); // Update the YAML after deleting the node
+  };
+
+  const handleDeleteLink = (index) => {
+    const updatedLinks = [...links];
+    updatedLinks.splice(index, 1);
+    setLinks(updatedLinks);
+    generateYaml(); // Update the YAML after deleting the link
+  };
+
   const generateYaml = () => {
     let yamlString = `name: ${name}\ntopology:\n  nodes:\n`;
     nodes.forEach((node, index) => {
@@ -85,7 +98,7 @@ const Generator = () => {
       }
     });
     yamlString += "  links:\n";
-    links.forEach((link, index) => {
+    links.forEach((link) => {
       yamlString += `    - endpoints: ["${link.node1}:${link.interface1}", "${link.node2}:${link.interface2}"]\n`;
     });
     setYaml(yamlString);
@@ -112,6 +125,7 @@ const Generator = () => {
       console.error("Error occurred during deployment:", error);
     }
   };
+
 
   return (
     <Box m="20px" display="flex">
@@ -184,6 +198,12 @@ const Generator = () => {
                   margin="normal"
                 />
               </Box>
+              <IconButton
+                color="error"
+                onClick={() => handleDeleteNode(index)}
+              >
+                <DeleteIcon />
+              </IconButton>
             </Box>
           ))}
           <Button variant="contained" onClick={handleAddLink} mt="20px">
@@ -207,7 +227,7 @@ const Generator = () => {
                       {`Node ${index + 1}`}
                     </MenuItem>
                   ))}
-                 </Select>
+                </Select>
               </Box>
               <Box flex="1" mx="10px">
                 <Select
@@ -254,9 +274,14 @@ const Generator = () => {
                   <MenuItem value="eth2">eth2</MenuItem>
                 </Select>
               </Box>
+              <IconButton
+                color="error"
+                onClick={() => handleDeleteLink(index)}
+              >
+                <DeleteIcon />
+              </IconButton>
             </Box>
           ))}
-
         </Box>
       </Box>
       <Box flex="1" ml="20px">

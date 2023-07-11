@@ -46,7 +46,7 @@ const Cenario = () => {
         {connected && (
           <Box flex="1" ml="10px">
             <iframe
-              src={`http://${secondBoxIp}/`}
+              src={`http://${ip}:${secondBoxIp}/`}
               style={{ width: "100%", height: "700px", border: "none" }}
             />
           </Box>

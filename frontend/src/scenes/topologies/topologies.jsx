@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button } from "@mui/material";
+import { Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button,IconButton } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 import Header from "../../components/Header";
 
@@ -35,11 +36,11 @@ const Topologies = () => {
 
     const deployments = await response.json();
 
-    // Vê se a topologia esta registada nos deployments
+    // Check if the topology is associated with any deployment
     const associatedDeployments = deployments.filter((deployment) => deployment.topo_name === topologyName);
 
     if (associatedDeployments.length > 0) {
-      
+      // Display an error message using window.alert
       window.alert(`The topology "${topologyName}" has deployments associated and cannot be deleted.`);
     } else {
       const confirmDelete = window.confirm(`Are you sure you want to delete the topology "${topologyName}"?`);
@@ -54,11 +55,11 @@ const Topologies = () => {
             throw new Error("Failed to delete topology");
           }
 
-  
+          // Fetch updated topology data
           fetchData();
         } catch (error) {
           console.error(error);
-          
+          // Display an error message using window.alert
           window.alert(`Error: ${error.message}`);
         }
       }
@@ -81,6 +82,7 @@ const Topologies = () => {
               <TableRow>
                 <TableCell>Name</TableCell>
                 <TableCell>ID</TableCell>
+                <TableCell>***</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -89,9 +91,12 @@ const Topologies = () => {
                   <TableCell>{topology.name}</TableCell>
                   <TableCell>{topology._id}</TableCell>
                   <TableCell>
-                    <Button variant="contained" onClick={() => handleDeleteTopology(topology.name)}>
-                      Delete
-                    </Button>
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDeleteTopology(topology.name)}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
                   </TableCell>
                 </TableRow>
               ))}

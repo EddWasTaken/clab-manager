@@ -14,12 +14,15 @@ const Generator = () => {
       ...nodes,
       { selectedOption: "Select Server", kind: "", image: "", ports: [] }
     ]);
+    generateYaml(); // Update the YAML after deleting the node
   };
 
   const handleNodeChange = (index, field, value) => {
     const updatedNodes = [...nodes];
     updatedNodes[index][field] = value;
     setNodes(updatedNodes);
+    generateYaml(); // Update the YAML after deleting the node
+
   };
 
   const handleKindImageChange = (index, value) => {
@@ -52,22 +55,30 @@ const Generator = () => {
     }
 
     setNodes(updatedNodes);
+    generateYaml(); // Update the YAML after deleting the node
+
   };
 
   const handleKindImageInputChange = (index, field, value) => {
     const updatedNodes = [...nodes];
     updatedNodes[index][field] = value;
     setNodes(updatedNodes);
+    generateYaml(); // Update the YAML after deleting the node
+
   };
 
   const handleAddLink = () => {
     setLinks([...links, { node1: "", interface1: "", node2: "", interface2: "" }]);
+    generateYaml(); // Update the YAML after deleting the node
+
   };
 
   const handleLinkChange = (index, field, value) => {
     const updatedLinks = [...links];
     updatedLinks[index][field] = value;
     setLinks(updatedLinks);
+    generateYaml(); // Update the YAML after deleting the node
+
   };
 
   const handleDeleteNode = (index) => {
@@ -105,16 +116,15 @@ const Generator = () => {
   };
 
   const postDeploy = async () => {
-    const jsonObj = yaml.load(topology);
-    const jsonStr = JSON.stringify(jsonObj);
-
+	   const jsonObj = yaml.load(topology);
+       const jsonStr = JSON.stringify(jsonObj);
     try {
       const response = await fetch("/api/topologies", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
-        body: jsonStr,
+        body: topology
       });
       if (response.ok) {
         console.log("Deploy successful");
@@ -125,7 +135,6 @@ const Generator = () => {
       console.error("Error occurred during deployment:", error);
     }
   };
-
 
   return (
     <Box m="20px" display="flex">

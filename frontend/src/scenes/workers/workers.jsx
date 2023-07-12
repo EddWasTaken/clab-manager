@@ -1,19 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
-  Box,
-  Table,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
+  Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button,
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Header from "../../components/Header";
 
 const Workers = () => {
@@ -167,9 +157,13 @@ const Workers = () => {
                   <TableCell>{worker._id}</TableCell>
                   <TableCell>{worker.ip}</TableCell>
                   <TableCell>
-                    <Button variant="contained" onClick={() => handleDeleteWorker(worker.name)}>
-                      Delete
-                    </Button>
+      
+                    <IconButton
+                color="error"
+                onClick={() => handleDeleteWorker(worker.name)}
+              >
+                <DeleteIcon />
+              </IconButton>
                   </TableCell>
                 </TableRow>
               ))}

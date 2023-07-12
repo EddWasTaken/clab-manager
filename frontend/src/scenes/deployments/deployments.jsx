@@ -1,24 +1,10 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import {
-  Box,
-  Table,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
+  Box, Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Button, Dialog, DialogTitle,
+  DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem, TextField,IconButton
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const Deployments = () => {
   const [data, setData] = useState([]);
@@ -160,7 +146,8 @@ const Deployments = () => {
                 <TableCell>Worker IP</TableCell>
                 <TableCell>Topology NAME</TableCell>
                 <TableCell>Port</TableCell>
-                <TableCell>Teste</TableCell>
+                <TableCell>Visualizar</TableCell>
+                <TableCell>****</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -176,8 +163,17 @@ const Deployments = () => {
                       onClick={() => handleOpenWindow(getWorkerIP(deployment.worker_id), deployment.port)}
                       mt="20px"
                     >
-                      Rebenta
+                      Cenario
                     </Button>
+                  </TableCell>
+                  <TableCell>
+      
+                    <IconButton
+                    color="error"
+                    //onClick={() => handleDeleteTopologie()}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
                   </TableCell>
                 </TableRow>
               ))}

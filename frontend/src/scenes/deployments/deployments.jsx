@@ -115,6 +115,24 @@ const Deployments = () => {
     }
   };
 
+  const handleDeleteDeployment = async (deploymentId) => {
+    const confirmDelete = window.confirm(`Are you sure you want to delete the deplyment"?`);
+    if (confirmDelete) {
+    try {
+      const response = await fetch(`/api/deployments/${deploymentId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete deployment");
+      }
+      // Remove the deleted deployment from the data array
+      setData(data.filter(deployment => deployment._id !== deploymentId));
+    } catch (error) {
+      console.error("Error deleting deployment:", error);
+    }
+  }
+  };
+
   const handleOpenWindow = (ip, port) => {
     const url = `/cenario?ip=${ip}&port=${port}`;
     window.open(url, "_self");
@@ -170,7 +188,7 @@ const Deployments = () => {
       
                     <IconButton
                     color="error"
-                    //onClick={() => handleDeleteTopologie()}
+                    onClick={() => handleDeleteDeployment(deployment._id)}
                   >
                     <DeleteIcon />
                   </IconButton>

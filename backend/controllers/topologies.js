@@ -62,7 +62,8 @@ export const createTopology = async(req, res) => {
 export const deleteTopology = async(req, res) => {
 
     try {
-        const topo = await Topology.deleteOne({ name: req.body.name})
+        const { name } = req.params;
+        const topo = await Topology.deleteOne({ name: name})
         res.status(200).json(topo);
     } catch (e) {
         console.log(e);
